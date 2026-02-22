@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de QR Code Pro</title>
+    <script src="qrcode.min.js"></script>
+    <style>
+        :root { --primary: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 40px 20px; color: #1e293b; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 600px; width: 100%; }
+        header { text-align: center; margin-bottom: 30px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { display: block; margin: 10px 0 5px; font-weight: 600; font-size: 13px; text-transform: uppercase; color: #64748b; }
+        select, input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.2s; }
+        select:focus, input:focus, textarea:focus { border-color: var(--primary); }
+        #qrcode-container { background: #f8fafc; padding: 30px; border-radius: 15px; display: flex; justify-content: center; align-items: center; margin: 25px 0; border: 2px dashed #cbd5e1; min-height: 200px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; border: none; transition: 0.3s; }
+        .btn-download { background: var(--primary); color: white; }
+        .btn-download:hover { background: #1d4ed8; transform: translateY(-2px); }
+        
+        /* Legenda Estilizada */
+        .info-section { margin-top: 35px; border-top: 2px solid #f1f5f9; pt: 20px; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-top: 15px; }
+        .info-item { text-align: center; font-size: 11px; background: #f8fafc; padding: 10px; border-radius: 8px; }
+        .info-item span { display: block; font-size: 20px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <header>
+        <h2 style="margin:0">QR Code Studio 🚀</h2>
+        <p style="color:#64748b; font-size: 14px;">Crie códigos inteligentes e personalizados</p>
+    </header>
+
+    <label>1. O que você quer esconder?</label>
+    <select id="type-select" onchange="updateUI()">
+        <option value="link">🔗 Site / Link (URL)</option>
+        <option value="wa">💬 WhatsApp (Mensagem Direta)</option>
+        <option value="pix">💸 Chave PIX / Pagamento</option>
+        <option value="tel">📞 Telefone (Ligar)</option>
+        <option value="text">📝 Texto Livre ou Nota</option>
+    </select>
+
+    <textarea id="main-input" rows="3" placeholder="Digite o link aqui..." oninput="generate()"></textarea>
+
+    <div class="grid-inputs">
+        <div>
+            <label>Tamanho (px)</label>
+            <select id="size-select" onchange="generate()">
+                <option value="128">128x128</option>
+                <option value="256" selected>256x256</option>
+                <option value="512">512x512</option>
+            </select>
+        </div>
+        <div>
+            <label>Cor do QR Code</label>
+            <input type="color" id="color-dark" value="#000000" oninput="generate()">
+        </div>
+    </div>
+
+    <div id="qrcode-container">
+        <div id="qrcode"></div>
+    </div>
+    
+    <div class="btn-group">
+        <button class="btn btn-download" onclick="downloadQR()">📥 Baixar em Alta Resolução</button>
+    </div>
+
+    <div class="info-section">
+        <label>Utilidades do QR Code:</label>
+        <div class="info-grid">
+            <div class="info-item"><span>🌐</span><strong>URLs</strong> Redireciona para sites.</div>
+            <div class="info-item"><span>💰</span><strong>PIX</strong> Facilita pagamentos.</div>
+            <div class="info-item"><span>📱</span><strong>WhatsApp</strong> Abre conversa direto.</div>
+            <div class="info-item"><span>📶</span><strong>Wi-Fi</strong> Conecta na rede.</div>
+        </div>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 15px; line-height: 1.5;">
+            * Ao escanear, o sistema do smartphone identifica o prefixo do texto (como <em>tel:</em> ou <em>https://</em>) e sugere a ação imediata.
+        </p>
+    </div>
+</div>
+
+<script>
+    let qrcodeObj = null;
+
+    function updateUI() {
+        const type = document.getElementById('type-select').value;
+        const input = document.getElementById('main-input');
+        const labels = {
+            link: "Cole a URL do site:",
+            wa: "Número do WhatsApp (com DDD):",
+            pix: "Chave PIX ou Código Copia e Cola:",
+            tel: "Número do Telefone:",
+            text: "Escreva seu texto ou nota:"
+        };
+        input.placeholder = labels[type];
+        generate();
+    }
+
+    function generate() {
+        const container = document.getElementById("qrcode");
+        container.innerHTML = ""; // Limpa o anterior
+        
+        const type = document.getElementById('type-select').value;
+        const rawValue = document.getElementById('main-input').value.trim();
+        const size = parseInt(document.getElementById('size-select').value);
+        const color = document.getElementById('color-dark').value;
+
+        if (!rawValue) return;
+
+        let finalValue = rawValue;
+
+        // Formatação Automática conforme o padrão industrial
+        if (type === 'tel') finalValue = `tel:${rawValue.replace(/\s/g, '')}`;
+        if (type === 'wa') {
+            const cleanNum = rawValue.replace(/\D/g, '');
+            finalValue = `https://wa.me/${cleanNum}`;
+        }
+        if (type === 'link' && !rawValue.startsWith('http')) {
+            finalValue = `https://${rawValue}`;
+        }
+
+        qrcodeObj = new QRCode(container, {
+            text: finalValue,
+            width: size,
+            height: size,
+            colorDark: color,
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    function downloadQR() {
+        const img = document.querySelector('#qrcode img');
+        if (img) {
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = `qrcode-${Date.now()}.png`;
+            link.click();
+        } else {
+            alert("Escreva algo primeiro!");
+        }
+    }
+
+    // Gerar um inicial
+    updateUI();
+</script>
+
+</body>
+</html>
