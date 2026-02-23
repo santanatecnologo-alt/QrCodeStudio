@@ -116,45 +116,55 @@
     }
 
     function generate() {
-        const container = document.getElementById("qrcode");
-        container.innerHTML = ""; 
-        
-        const type = document.getElementById('type-select').value;
-        const rawValue = document.getElementById('main-input').value.trim();
-        const size = parseInt(document.getElementById('size-select').value);
-        const color = document.getElementById('color-dark').value;
+		const container = document.getElementById("qrcode");
+		container.innerHTML = ""; 
+		
+		const type = document.getElementById('type-select').value;
+		const rawValue = document.getElementById('main-input').value.trim();
+		const size = parseInt(document.getElementById('size-select').value);
+		const color = document.getElementById('color-dark').value;
 
-        if (!rawValue) return;
+		if (!rawValue) {
+			// Se estiver vazio, limpa o link do botão também
+			const btn = document.getElementById('download-btn');
+			btn.href = "#";
+			btn.removeAttribute('download');
+			return;
+		}
 
-        let finalValue = rawValue;
-        if (type === 'tel') finalValue = `tel:${rawValue.replace(/\D/g, '')}`;
-        if (type === 'wa') finalValue = `https://wa.me/${rawValue.replace(/\D/g, '')}`;
-        if (type === 'link' && !rawValue.startsWith('http')) finalValue = `https://${rawValue}`;
+		let finalValue = rawValue;
+		if (type === 'tel') finalValue = `tel:${rawValue.replace(/\D/g, '')}`;
+		if (type === 'wa') finalValue = `https://wa.me/${rawValue.replace(/\D/g, '')}`;
+		if (type === 'link' && !rawValue.startsWith('http')) finalValue = `https://${rawValue}`;
 
-        qrcodeObj = new QRCode(container, {
-            text: finalValue,
-            width: size,
-            height: size,
-            colorDark: color,
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+		qrcodeObj = new QRCode(container, {
+			text: finalValue,
+			width: size,
+			height: size,
+			colorDark: color,
+			colorLight: "#ffffff",
+			correctLevel: QRCode.CorrectLevel.H
+		});
 
-        // Aguarda a geração para preparar o botão de download
-        setTimeout(() => {
-            const img = document.querySelector('#qrcode img');
-            const btn = document.getElementById('download-btn');
-            
-            if (img) {
-                btn.href = img.src;
-                btn.download = `qrcode-${Date.now()}.png`;
-                btn.onclick = () => {
-                    showToast("📥 Iniciando download...");
-                    return true;
-                };
-            }
-        }, 300);
-    }
+		// O SEGREDO: Transformar o QR Code em imagem e já injetar no botão IMEDIATAMENTE
+		// Usamos um intervalo curto para garantir que a biblioteca terminou o desenho
+		let checkExist = setInterval(function() {
+			const img = document.querySelector('#qrcode img');
+			if (img) {
+				const btn = document.getElementById('download-btn');
+				
+				// Injetamos o conteúdo da imagem direto no link AGORA
+				btn.href = img.src;
+				btn.download = `qrcode-${Date.now()}.png`;
+				
+				btn.onclick = () => {
+					showToast("📥 Iniciando download...");
+					return true; 
+				};
+				clearInterval(checkExist); // Para de procurar quando achar
+			}
+		}, 100); 
+	}
 
     // Inicialização
     updateUI();
