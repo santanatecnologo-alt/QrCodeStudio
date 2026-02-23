@@ -31,6 +31,32 @@
 			.card { padding: 15px; }
 			.grid-inputs { grid-template-columns: 1fr; }
 		}
+		
+		/* Estilo do aviso flutuante */
+		#toast {
+			visibility: hidden;
+			min-width: 200px;
+			background-color: #333;
+			color: #fff;
+			text-align: center;
+			border-radius: 8px;
+			padding: 16px;
+			position: fixed;
+			z-index: 1000;
+			bottom: 30px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-size: 14px;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+		}
+
+		#toast.show {
+			visibility: visible;
+			animation: fadein 0.5s, fadeout 0.5s 2.5s;
+		}
+
+		@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+		@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
@@ -139,38 +165,47 @@
         });
     }
 
-    function downloadQR() {
-    const img = document.querySelector('#qrcode img');
-    if (img) {
-        // Criamos um canvas temporário para converter a imagem
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-
-        // Convertemos o conteúdo para um Blob (Binary Large Object)
-        canvas.toBlob(function(blob) {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `qrcode-${Date.now()}.png`;
-            
-            // Adicionamos ao corpo do documento para garantir o clique no mobile
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Limpa a memória
-            URL.revokeObjectURL(link.href);
-        }, 'image/png');
-    } else {
-        alert("Gere um QR Code primeiro!");
-    }
+    function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
 }
+
+	function downloadQR() {
+		const img = document.querySelector('#qrcode img');
+		if (!img) {
+			showToast("❌ Gere um código primeiro!");
+			return;
+		}
+
+		showToast("⏳ Processando imagem...");
+
+		// Pequeno delay para o usuário ver o aviso antes do sistema focar no download
+		setTimeout(() => {
+			const canvas = document.createElement("canvas");
+			canvas.width = img.width;
+			canvas.height = img.height;
+			const ctx = canvas.getContext("2d");
+			ctx.drawImage(img, 0, 0);
+
+			canvas.toBlob(function(blob) {
+				const link = document.createElement('a');
+				link.href = URL.createObjectURL(blob);
+				link.download = `qrcode-${Date.now()}.png`;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				URL.revokeObjectURL(link.href);
+				
+				showToast("✅ Download concluído!");
+			}, 'image/png');
+		}, 500);
+	}
 
     // Gerar um inicial
     updateUI();
 </script>
-
+<div id="toast">Preparando download...</div>
 </body>
 </html>
