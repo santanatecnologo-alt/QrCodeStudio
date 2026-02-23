@@ -1,124 +1,125 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Studio 🚀</title>
-    <script src="qrcode.min.js"></script>
-    <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 40px 20px; color: #1e293b; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 600px; width: 100%; }
-        header { text-align: center; margin-bottom: 30px; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        label { display: block; margin: 10px 0 5px; font-weight: 600; font-size: 13px; text-transform: uppercase; color: #64748b; }
-        select, input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.2s; }
-        select:focus, input:focus, textarea:focus { border-color: var(--primary); }
-        #qrcode-container { background: #f8fafc; padding: 30px; border-radius: 15px; display: flex; justify-content: center; align-items: center; margin: 25px 0; border: 2px dashed #cbd5e1; min-height: 200px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; border: none; transition: 0.3s; text-decoration: none; display: block; text-align: center; }
-        .btn-download { background: var(--primary); color: white; }
-        .btn-download:hover { background: #1d4ed8; transform: translateY(-2px); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Studio 🚀</title>
+<script src="qrcode.min.js"></script>
+<style>
+:root { --primary: #2563eb; --bg: #f1f5f9; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 40px 20px; color: #1e293b; }
+.card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 600px; width: 100%; }
+header { text-align: center; margin-bottom: 30px; }
+.grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+label { display: block; margin: 10px 0 5px; font-weight: 600; font-size: 13px; text-transform: uppercase; color: #64748b; }
+select, input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.2s; }
+select:focus, input:focus, textarea:focus { border-color: var(--primary); }
+#qrcode-container { background: #f8fafc; padding: 30px; border-radius: 15px; display: flex; justify-content: center; align-items: center; margin: 25px 0; border: 2px dashed #cbd5e1; min-height: 200px; }
+.btn-group { display: flex; gap: 10px; }
+.btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; border: none; transition: 0.3s; text-decoration: none; display: block; text-align: center; }
+.btn-download { background: var(--primary); color: white; }
+.btn-download:hover { background: #1d4ed8; transform: translateY(-2px); }
 
-        .info-section { margin-top: 35px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-top: 15px; }
-        .info-item { text-align: center; font-size: 11px; background: #f8fafc; padding: 10px; border-radius: 8px; }
-        .info-item span { display: block; font-size: 20px; margin-bottom: 5px; }
+.info-section { margin-top: 35px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-top: 15px; }
+.info-item { text-align: center; font-size: 11px; background: #f8fafc; padding: 10px; border-radius: 8px; }
+.info-item span { display: block; font-size: 20px; margin-bottom: 5px; }
 
-        @media (max-width: 480px) {
-            .card { padding: 15px; }
-            .grid-inputs { grid-template-columns: 1fr; }
-        }
+@media (max-width: 480px) {
+.card { padding: 15px; }
+.grid-inputs { grid-template-columns: 1fr; }
+}
 
-        #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 14px; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-    </style>
+#toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 14px; }
+#toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+</style>
 </head>
 <body>
 
 <div class="card">
-    <header>
-        <h2 style="margin:0">QR Code Studio 🚀</h2>
-        <p style="color:#64748b; font-size: 14px;">Crie códigos inteligentes e personalizados</p>
-    </header>
+<header>
+<h2 style="margin:0">QR Code Studio 🚀</h2>
+<p style="color:#64748b; font-size: 14px;">Crie códigos inteligentes e personalizados</p>
+</header>
 
-    <label>1. O que você quer esconder?</label>
-    <select id="type-select" onchange="updateUI()">
-        <option value="link">🔗 Site / Link (URL)</option>
-        <option value="wa">💬 WhatsApp (Mensagem Direta)</option>
-        <option value="pix">💸 Chave PIX / Pagamento</option>
-        <option value="tel">📞 Telefone (Ligar)</option>
-        <option value="text">📝 Texto Livre ou Nota</option>
-    </select>
+<label>1. O que você quer esconder?</label>
+<select id="type-select" onchange="updateUI()">
+<option value="link">🔗 Site / Link (URL)</option>
+<option value="wa">💬 WhatsApp (Mensagem Direta)</option>
+<option value="pix">💸 Chave PIX / Pagamento</option>
+<option value="tel">📞 Telefone (Ligar)</option>
+<option value="text">📝 Texto Livre ou Nota</option>
+</select>
 
-    <textarea id="main-input" rows="3" placeholder="Digite o link aqui..." oninput="generate()"></textarea>
+<textarea id="main-input" rows="3" placeholder="Digite o link aqui..." oninput="generate()"></textarea>
 
-    <div class="grid-inputs">
-        <div>
-            <label>Tamanho (px)</label>
-            <select id="size-select" onchange="generate()">
-                <option value="128">128x128</option>
-                <option value="256" selected>256x256</option>
-                <option value="512">512x512</option>
-            </select>
-        </div>
-        <div>
-            <label>Cor do QR Code</label>
-            <input type="color" id="color-dark" value="#000000" oninput="generate()">
-        </div>
-    </div>
+<div class="grid-inputs">
+<div>
+<label>Tamanho (px)</label>
+<select id="size-select" onchange="generate()">
+<option value="128">128x128</option>
+<option value="256" selected>256x256</option>
+<option value="512">512x512</option>
+</select>
+</div>
+<div>
+<label>Cor do QR Code</label>
+<input type="color" id="color-dark" value="#000000" oninput="generate()">
+</div>
+</div>
 
-    <div id="qrcode-container">
-        <div id="qrcode"></div>
-    </div>
+<div id="qrcode-container">
+<div id="qrcode"></div>
+</div>
 
-    <div class="btn-group">
-        <a id="download-btn" class="btn btn-download">📥 Baixar em Alta Resolução</a>
-    </div>
-	<p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 10px;">
-		💡 Dica mobile: Se o download não iniciar, clique novamente ou segure na imagem para salvar.
-	</p>
+<div class="btn-group">
+<a id="download-btn" class="btn btn-download">📥 Baixar em Alta Resolução</a>
+</div>
 
-    <div class="info-section">
-        <label>Utilidades do QR Code:</label>
-        <div class="info-grid">
-            <div class="info-item"><span>🌐</span><strong>URLs</strong> Sites</div>
-            <div class="info-item"><span>💰</span><strong>PIX</strong> Pagamentos</div>
-            <div class="info-item"><span>📱</span><strong>WhatsApp</strong> Conversas</div>
-            <div class="info-item"><span>📶</span><strong>Wi-Fi</strong> Conexão</div>
-        </div>
-    </div>
+<p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 10px;">
+	💡 Dica mobile: Se o download não iniciar, clique novamente ou segure na imagem para salvar.
+</p>	
+
+<div class="info-section">
+<label>Utilidades do QR Code:</label>
+<div class="info-grid">
+<div class="info-item"><span>🌐</span><strong>URLs</strong> Sites</div>
+<div class="info-item"><span>💰</span><strong>PIX</strong> Pagamentos</div>
+<div class="info-item"><span>📱</span><strong>WhatsApp</strong> Conversas</div>
+<div class="info-item"><span>📶</span><strong>Wi-Fi</strong> Conexão</div>
+</div>
+</div>
 </div>
 
 <div id="toast">Aviso aqui</div>
 
 <script>
-    let qrcodeObj = null;
+let qrcodeObj = null;
 
-    function showToast(message) {
-        const toast = document.getElementById("toast");
-        toast.innerText = message;
-        toast.className = "show";
-        setTimeout(() => { toast.className = ""; }, 3000);
-    }
+function showToast(message) {
+const toast = document.getElementById("toast");
+toast.innerText = message;
+toast.className = "show";
+setTimeout(() => { toast.className = ""; }, 3000);
+}
 
-    function updateUI() {
-        const type = document.getElementById('type-select').value;
-        const input = document.getElementById('main-input');
-        const labels = {
-            link: "Cole a URL do site:",
-            wa: "Número do WhatsApp (com DDD):",
-            pix: "Chave PIX ou Código Copia e Cola:",
-            tel: "Número do Telefone:",
-            text: "Escreva seu texto ou nota:"
-        };
-        input.placeholder = labels[type];
-        generate();
-    }
+function updateUI() {
+const type = document.getElementById('type-select').value;
+const input = document.getElementById('main-input');
+const labels = {
+link: "Cole a URL do site:",
+wa: "Número do WhatsApp (com DDD):",
+pix: "Chave PIX ou Código Copia e Cola:",
+tel: "Número do Telefone:",
+text: "Escreva seu texto ou nota:"
+};
+input.placeholder = labels[type];
+generate();
+}
 
-    function generate() {
+function generate() {
         const container = document.getElementById("qrcode");
         container.innerHTML = ""; 
         
@@ -208,8 +209,7 @@
 		}, 100); 
 	}
 
-    // Inicialização
-    updateUI();
+// Inicialização
+updateUI();
 </script>
 </body>
-
