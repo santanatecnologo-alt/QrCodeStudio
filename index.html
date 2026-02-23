@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de QR Code Pro</title>
+    <title>QR Code Studio 🚀</title>
     <script src="qrcode.min.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; }
@@ -16,47 +16,24 @@
         select:focus, input:focus, textarea:focus { border-color: var(--primary); }
         #qrcode-container { background: #f8fafc; padding: 30px; border-radius: 15px; display: flex; justify-content: center; align-items: center; margin: 25px 0; border: 2px dashed #cbd5e1; min-height: 200px; }
         .btn-group { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; border: none; transition: 0.3s; }
+        .btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; border: none; transition: 0.3s; text-decoration: none; display: block; text-align: center; }
         .btn-download { background: var(--primary); color: white; }
         .btn-download:hover { background: #1d4ed8; transform: translateY(-2px); }
         
-        /* Legenda Estilizada */
-        .info-section { margin-top: 35px; border-top: 2px solid #f1f5f9; pt: 20px; }
+        .info-section { margin-top: 35px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-top: 15px; }
         .info-item { text-align: center; font-size: 11px; background: #f8fafc; padding: 10px; border-radius: 8px; }
         .info-item span { display: block; font-size: 20px; margin-bottom: 5px; }
-		
-		/* Otimização para Mobile */
-		@media (max-width: 480px) {
-			.card { padding: 15px; }
-			.grid-inputs { grid-template-columns: 1fr; }
-		}
-		
-		/* Estilo do aviso flutuante */
-		#toast {
-			visibility: hidden;
-			min-width: 200px;
-			background-color: #333;
-			color: #fff;
-			text-align: center;
-			border-radius: 8px;
-			padding: 16px;
-			position: fixed;
-			z-index: 1000;
-			bottom: 30px;
-			left: 50%;
-			transform: translateX(-50%);
-			font-size: 14px;
-			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-		}
 
-		#toast.show {
-			visibility: visible;
-			animation: fadein 0.5s, fadeout 0.5s 2.5s;
-		}
+        @media (max-width: 480px) {
+            .card { padding: 15px; }
+            .grid-inputs { grid-template-columns: 1fr; }
+        }
 
-		@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-		@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 14px; }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
@@ -98,25 +75,31 @@
     </div>
     
     <div class="btn-group">
-        <button class="btn btn-download" onclick="downloadQR()">📥 Baixar em Alta Resolução</button>
+        <a id="download-btn" class="btn btn-download">📥 Baixar em Alta Resolução</a>
     </div>
 
     <div class="info-section">
         <label>Utilidades do QR Code:</label>
         <div class="info-grid">
-            <div class="info-item"><span>🌐</span><strong>URLs</strong> Redireciona para sites.</div>
-            <div class="info-item"><span>💰</span><strong>PIX</strong> Facilita pagamentos.</div>
-            <div class="info-item"><span>📱</span><strong>WhatsApp</strong> Abre conversa direto.</div>
-            <div class="info-item"><span>📶</span><strong>Wi-Fi</strong> Conecta na rede.</div>
+            <div class="info-item"><span>🌐</span><strong>URLs</strong> Sites</div>
+            <div class="info-item"><span>💰</span><strong>PIX</strong> Pagamentos</div>
+            <div class="info-item"><span>📱</span><strong>WhatsApp</strong> Conversas</div>
+            <div class="info-item"><span>📶</span><strong>Wi-Fi</strong> Conexão</div>
         </div>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 15px; line-height: 1.5;">
-            * Ao escanear, o sistema do smartphone identifica o prefixo do texto (como <em>tel:</em> ou <em>https://</em>) e sugere a ação imediata.
-        </p>
     </div>
 </div>
 
+<div id="toast">Aviso aqui</div>
+
 <script>
     let qrcodeObj = null;
+
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.className = "show";
+        setTimeout(() => { toast.className = ""; }, 3000);
+    }
 
     function updateUI() {
         const type = document.getElementById('type-select').value;
@@ -134,7 +117,7 @@
 
     function generate() {
         const container = document.getElementById("qrcode");
-        container.innerHTML = ""; // Limpa o anterior
+        container.innerHTML = ""; 
         
         const type = document.getElementById('type-select').value;
         const rawValue = document.getElementById('main-input').value.trim();
@@ -144,16 +127,9 @@
         if (!rawValue) return;
 
         let finalValue = rawValue;
-
-        // Formatação Automática conforme o padrão industrial
-        if (type === 'tel') finalValue = `tel:${rawValue.replace(/\s/g, '')}`;
-        if (type === 'wa') {
-            const cleanNum = rawValue.replace(/\D/g, '');
-            finalValue = `https://wa.me/${cleanNum}`;
-        }
-        if (type === 'link' && !rawValue.startsWith('http')) {
-            finalValue = `https://${rawValue}`;
-        }
+        if (type === 'tel') finalValue = `tel:${rawValue.replace(/\D/g, '')}`;
+        if (type === 'wa') finalValue = `https://wa.me/${rawValue.replace(/\D/g, '')}`;
+        if (type === 'link' && !rawValue.startsWith('http')) finalValue = `https://${rawValue}`;
 
         qrcodeObj = new QRCode(container, {
             text: finalValue,
@@ -163,58 +139,25 @@
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
+
+        // Aguarda a geração para preparar o botão de download
+        setTimeout(() => {
+            const img = document.querySelector('#qrcode img');
+            const btn = document.getElementById('download-btn');
+            
+            if (img) {
+                btn.href = img.src;
+                btn.download = `qrcode-${Date.now()}.png`;
+                btn.onclick = () => {
+                    showToast("📥 Iniciando download...");
+                    return true;
+                };
+            }
+        }, 300);
     }
 
-    function showToast(message) {
-    const toast = document.getElementById("toast");
-    toast.innerText = message;
-    toast.className = "show";
-    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-}
-
-	function downloadQR() {
-    const img = document.querySelector('#qrcode img');
-    if (!img) {
-        showToast("❌ Gere um código primeiro!");
-        return;
-    }
-
-    showToast("⏳ Preparando imagem...");
-
-    // Pegamos o src da imagem (que já é um base64 gerado pela biblioteca)
-    const imgData = img.src;
-
-    // Criamos o link
-    const link = document.createElement('a');
-    link.href = imgData;
-    link.download = `qrcode-${Date.now()}.png`;
-
-    // Truque para Mobile: Abrir em nova aba se o download automático falhar
-    // Isso permite que o usuário use o "Pressionar e Salvar" se necessário
-    link.target = '_blank'; 
-
-    // Adiciona ao corpo do documento (obrigatório para iOS/Safari)
-    document.body.appendChild(link);
-    
-    // Executa o clique
-    try {
-        link.click();
-        showToast("✅ Iniciando download...");
-    } catch (err) {
-        // Se falhar, tentamos abrir a imagem direto para o usuário salvar manualmente
-        window.open(imgData, '_blank');
-        showToast("📸 Toque e segure na imagem para salvar");
-    }
-
-    // Remove do documento
-    setTimeout(() => {
-        document.body.removeChild(link);
-    }, 100);
-}
-
-    // Gerar um inicial
+    // Inicialização
     updateUI();
 </script>
-<div id="toast">Preparando download...</div>
 </body>
 </html>
