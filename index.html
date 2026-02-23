@@ -173,35 +173,44 @@
 }
 
 	function downloadQR() {
-		const img = document.querySelector('#qrcode img');
-		if (!img) {
-			showToast("❌ Gere um código primeiro!");
-			return;
-		}
+    const img = document.querySelector('#qrcode img');
+    if (!img) {
+        showToast("❌ Gere um código primeiro!");
+        return;
+    }
 
-		showToast("⏳ Processando imagem...");
+    showToast("⏳ Preparando imagem...");
 
-		// Pequeno delay para o usuário ver o aviso antes do sistema focar no download
-		setTimeout(() => {
-			const canvas = document.createElement("canvas");
-			canvas.width = img.width;
-			canvas.height = img.height;
-			const ctx = canvas.getContext("2d");
-			ctx.drawImage(img, 0, 0);
+    // Pegamos o src da imagem (que já é um base64 gerado pela biblioteca)
+    const imgData = img.src;
 
-			canvas.toBlob(function(blob) {
-				const link = document.createElement('a');
-				link.href = URL.createObjectURL(blob);
-				link.download = `qrcode-${Date.now()}.png`;
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
-				URL.revokeObjectURL(link.href);
-				
-				showToast("✅ Download concluído!");
-			}, 'image/png');
-		}, 500);
-	}
+    // Criamos o link
+    const link = document.createElement('a');
+    link.href = imgData;
+    link.download = `qrcode-${Date.now()}.png`;
+
+    // Truque para Mobile: Abrir em nova aba se o download automático falhar
+    // Isso permite que o usuário use o "Pressionar e Salvar" se necessário
+    link.target = '_blank'; 
+
+    // Adiciona ao corpo do documento (obrigatório para iOS/Safari)
+    document.body.appendChild(link);
+    
+    // Executa o clique
+    try {
+        link.click();
+        showToast("✅ Iniciando download...");
+    } catch (err) {
+        // Se falhar, tentamos abrir a imagem direto para o usuário salvar manualmente
+        window.open(imgData, '_blank');
+        showToast("📸 Toque e segure na imagem para salvar");
+    }
+
+    // Remove do documento
+    setTimeout(() => {
+        document.body.removeChild(link);
+    }, 100);
+}
 
     // Gerar um inicial
     updateUI();
